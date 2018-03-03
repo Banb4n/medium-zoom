@@ -18,24 +18,37 @@ const isNode = selector => selector && selector.nodeType === 1
  *
  * @param {(string|Element[])} selector The selector to target the images to attach the zoom to
  * @param {object} options The options of the zoom
- * @param {number} [options.margin=0] The space outside the zoomed image
- * @param {string} [options.background="#fff"] The color of the overlay
  * @param {number} [options.scrollOffset=48] The number of pixels to scroll to dismiss the zoom
  * @param {boolean} [options.metaClick=true] A boolean to enable the default action on meta click
  * @param {(string|Element|object)} [options.container] The element to render the zoom in or a viewport object
+<<<<<<< Updated upstream
+ * @param {(string|array)} [options.overlayStyles{background="#fff"}] To pass others css styles to overlay with default background-color=#fff
+ * @param {(string|array)} [options.imgStyles] To pass others css styles to image
+=======
+ * @param {(object)} [options.overlayStyles{background="#fff"}] Additional styles to pass to the overlay.
+ * @param {(object)} [options.imgStyles] Additional styles to pass to the zoomed image
+>>>>>>> Stashed changes
  * @param {(string|Element)} [options.template] The template element to show on zoom
  * @return The zoom object
  */
 const mediumZoom = (
   selector,
   {
-    margin = 0,
-    background = '#fff',
     scrollOffset = 48,
     metaClick = true,
     container,
+    overlayStyles = {
+      backgroundColor: '#fff'
+    },
+    imgStyles = {},
     template
-  } = {}
+  } = {
+    scrollOffset: 48,
+    metaClick: true,
+    overlayStyles: {
+      backgroundColor: '#fff'
+    }
+  }
 ) => {
   const selectImages = selector => {
     try {
@@ -61,15 +74,24 @@ const mediumZoom = (
     }
   }
 
-  const createOverlay = background => {
+  // Merge the given styles with an HTML Element's inline style
+  const addStyles = (styles, el) => {
+    const keys = Object.keys(styles)
+    keys.forEach(key => {
+      el.style[key] = styles[key]
+    })
+  }
+
+  const createOverlay = (overlayStyles) => {
     const overlay = document.createElement('div')
     overlay.classList.add('medium-zoom-overlay')
-    overlay.style.backgroundColor = background
+
+    addStyles(overlayStyles, overlay)
 
     return overlay
   }
 
-  const cloneTarget = template => {
+  const cloneTarget = (template, imgStyles) => {
     const { top, left, width, height } = template.getBoundingClientRect()
     const clone = template.cloneNode()
     const scrollTop =
@@ -82,7 +104,6 @@ const mediumZoom = (
       document.documentElement.scrollLeft ||
       document.body.scrollLeft ||
       0
-
     clone.removeAttribute('id')
     clone.style.position = 'absolute'
     clone.style.top = `${top + scrollTop}px`
@@ -90,6 +111,10 @@ const mediumZoom = (
     clone.style.width = `${width}px`
     clone.style.height = `${height}px`
     clone.style.transform = ''
+
+    if (imgStyles) {
+      addStyles(imgStyles, clone)
+    }
 
     return clone
   }
@@ -203,9 +228,12 @@ const mediumZoom = (
   }
 
   const update = (newOptions = {}) => {
-    newOptions.background &&
-      (overlay.style.backgroundColor = newOptions.background)
-
+    if (newOptions.overlayStyles) {
+      addStyles(newOptions.overlayStyles, overlay)
+    }
+    if (newOptions.imgStyles && target.zoomed) {
+      addStyles(newOptions.imgStyles, target.zoomed)
+    }
     if (newOptions.container && newOptions.container instanceof Object) {
       newOptions.container = Object.assign(
         {},
@@ -391,8 +419,8 @@ const mediumZoom = (
   }
 
   const options = {
-    margin,
-    background,
+    overlayStyles,
+    imgStyles,
     scrollOffset,
     metaClick,
     container,
@@ -405,7 +433,7 @@ const mediumZoom = (
   }
 
   const images = selectImages(selector)
-  const overlay = createOverlay(options.background)
+  const overlay = createOverlay(options.overlayStyles)
 
   let target = {
     original: null,
