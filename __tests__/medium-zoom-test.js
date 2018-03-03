@@ -200,10 +200,14 @@ describe('update', () => {
   test('with margin updates the margin option and returns all options', () => {
     const zoom = mediumZoom()
     const options = zoom.update({
+<<<<<<< Updated upstream
       overlayStyles: {
         backgroundColor: '#fff',
         margin: 48
       }
+=======
+      margin: 48
+>>>>>>> Stashed changes
     })
     const expected = {
       overlayStyles: {
@@ -219,7 +223,7 @@ describe('update', () => {
     expect(zoom.options).toEqual(expected)
   })
 
-  test('with background updates the background option, returns all options and renders correctly', () => {
+  test('with overlayStyles.backgroundColor updates the overlayStyles option, returns all options and renders correctly', () => {
     const image = document.createElement('img')
     root.appendChild(image)
 
@@ -237,6 +241,43 @@ describe('update', () => {
         backgroundColor: 'rgb(255, 255, 255)'
       },
       imgStyles: {},
+      scrollOffset: 48,
+      metaClick: true
+    }
+
+    expect(options).toEqual(expected)
+    expect(zoom.options).toEqual(expected)
+    expect(
+      document.querySelector('.medium-zoom-overlay').style.backgroundColor
+    ).toBe('rgb(255, 255, 255)')
+  })
+
+  test('with imgStyles.backgroundColor updates the overlayStyles option, returns all options and renders correctly', () => {
+    const image = document.createElement('img')
+    root.appendChild(image)
+
+    const zoom = mediumZoom('img')
+    zoom.show()
+
+    const options = zoom.update({
+      overlayStyles: {
+        backgroundColor: '#fff'
+      },
+      imgStyles: {
+        borderRadius: '5px'
+      }
+    })
+
+    const expected = {
+      margin: 0,
+      template: '',
+      container: '',
+      overlayStyles: {
+        backgroundColor: '#fff'
+      },
+      imgStyles: {
+        borderRadius: '5px'
+      },
       scrollOffset: 48,
       metaClick: true
     }
